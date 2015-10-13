@@ -3,6 +3,8 @@
 --  item_id   商品ID           
 --  cate_id    商品类别 
 --  band_id    品牌  
+--  item_colors    颜色 
+--  item_size    尺寸  
 --  item_name  商品名称       
 --  item_des     商品详细信息    
 --  merch_name   供货商        
@@ -16,14 +18,16 @@
 --	item_pic	代表商品图片		
 --	item_prev_pics 商品预览图片 |||
 --	item_detail_pics 详细商品图片 |||
---	item_feature  商品属性信息  
-CREATE TABLE sku.items
+--	item_feature  商品属性信息  存json串
+CREATE TABLE items
 (	seq_id				bigserial   				not null,
    	lan 				CHARACTER (2) 				not null,	
    	item_id  			bigint 						not null,
    	cate_id    			bigint 						not null,
    	band_id    			bigint 						not null,
    	item_name  			CHARACTER VARYING (500) 	not null,
+	item_colors  		CHARACTER VARYING (500) 	not null,
+	item_size  			CHARACTER VARYING (500) 	not null,
    	item_des    		text,
    	merch_name  		CHARACTER VARYING (500),
    	store_area   		CHARACTER VARYING (500),
