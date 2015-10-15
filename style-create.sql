@@ -3,11 +3,12 @@
 --	lang 													cn/kr/en
 --	ciq_code   												海关编码		
 --  item_id   												商品ID           
---  cate_id    												商品类别 
---  band_id    												品牌
---  cate_nm    												商品名称 
+--  cate_id    												类别ID 
+--  band_id    												品牌ID
+--  cate_nm    												类别名称 
 --  band_nm    												品牌名称    
 --  item_name  												商品名称
+--  item_title  											商品标题
 --	bar_code												商品条形码
 --	bar_des      											商品条形码描述信息
 --  item_des     											商品详细信息    
@@ -31,6 +32,7 @@
 --	delivery_time  											配送时间 预计多少工作日到达,
 --	is_restrict_buy 										是否限购,
 --	restrict_amount 										限购数量,
+--	item_url 												商品详细页面url,
 --	is_shopping_poll 										是否支持拼购,
 --	is_share												是否支持分享,
 --	share_key 												分享商品key,
@@ -49,16 +51,69 @@
 --	create_at     											创建日期,
 --	update_at     											更新日期
 
+--	id														商品ID
+--	ciq_code  												海关编码,
+--	lang 													语言,
+--	cate_id    												类别ID,
+--	brand_id    											品牌ID,
+--	cate_nm    												类别名称,
+--	brand_nm    											品牌名称,
+--	item_nm  												商品名称,
+--	item_title												商品标题,
+--	item_desc    											商品描述,
+--	bar_code  												条形码,
+--	bar_des  												条码描述,
+--	merch_uid  												供应商ID,
+--	src_area  												源产地,
+--	on_shelves_at											上架时间,
+--	off_shelves_at											下架时间,
+--	item_master_img											商品主图,		
+--	item_preview_imgs 										预览图 json串
+--	item_detail_imgs 										商品详细信息图片
+--	item_features  											商品属性 json串 name value
+--	is_join_theme  											是否加入主题
+--	theme_id  												现在加入的主题ID
+--	is_major_item  											是否是主题代表商品
+--	state    												状态	'Y'--正常,'D'--到期商品,'N'--删除,'K'--售空
+--	is_free_ship  											是否包邮
+--	has_invoice  											是否提供发票
+--	has_vat_invoice  										是否提供增值税发票
+--	delivery_area  											发货地
+--	delivery_time  											可发货时间
+--	is_restrict_buy 										是否限购,
+--	restrict_amount 										限购数量,
+--	item_url												商品URL,
+--	is_shopping_poll 										是否参加拼购,
+--	is_share 												是否可以分享,
+--	share_key 												分享token,
+--	share_img 												分享至好友的商品图片,
+--	share_url 												分享至好友的链接,
+--	share_count 											被分享次数,
+--	like_count 												被点赞次数,
+--	collect_count 											被收藏次数,
+--	browse_count 											被浏览次数,
+--	item_notice 											商品重要布告,
+--	trans_uid												翻译人员id,
+--	trans_at     											翻译时间,
+--	trans_lang     											翻译至何种语言,kr->cn
+--	is_destory    											是否删除,
+--	destory_uid   											删除操作用户ID,
+--	destory_at												删除时间,
+--	update_at    											更新时间
+--	update_uid    											更新操作用户ID,
+--	create_at     											创建时间,
+--	create_uid    											创建操作用户ID,
+
 CREATE TABLE items (	
 	id							bigserial   				not null,
-   	item_id  					bigint 						not null,
 	ciq_code  					bigint 						not null,
 	lang 						CHARACTER VARYING (255)		,
    	cate_id    					bigint						,
-   	band_id    					bigint						,
+   	brand_id    					bigint						,
 	cate_nm    					CHARACTER VARYING (255) 	,
-	band_nm    					CHARACTER VARYING (255) 	,
+	brand_nm    					CHARACTER VARYING (255) 	,
    	item_nm  					CHARACTER VARYING (255) 	not null,
+	item_title					CHARACTER VARYING (255) 	,
    	item_desc    				text						,
 	bar_code  					CHARACTER VARYING (255)  	DEFAULT ''::CHARACTER VARYING,
 	bar_des  					CHARACTER VARYING (512)  	DEFAULT ''::CHARACTER VARYING,
@@ -74,7 +129,6 @@ CREATE TABLE items (
 	theme_id  					bigint						,
 	is_major_item  				BOOLEAN						DEFAULT FALSE,
 	state    					CHARACTER VARYING (255)		,
-	is_destory  				BOOLEAN						DEFAULT FALSE,
 	is_free_ship  				BOOLEAN						DEFAULT TRUE,
 	has_invoice  				BOOLEAN						DEFAULT FALSE,
 	has_vat_invoice  			BOOLEAN						DEFAULT FALSE,
@@ -82,6 +136,7 @@ CREATE TABLE items (
 	delivery_time  				CHARACTER VARYING (255)  	DEFAULT ''::CHARACTER VARYING,
 	is_restrict_buy 			BOOLEAN						DEFAULT FALSE,
 	restrict_amount 			INTEGER						,
+	item_url					CHARACTER VARYING (255)  	,
 	is_shopping_poll 			BOOLEAN						DEFAULT FALSE,
 	is_share 					BOOLEAN						DEFAULT FALSE,
 	share_key 					CHARACTER VARYING (255)		,
@@ -95,14 +150,17 @@ CREATE TABLE items (
 	trans_uid					bigint						,
 	trans_at     				timestamp (6) 				WITHOUT TIME ZONE,
 	trans_lang     				CHARACTER VARYING (512)  	,
-	create_uid					bigint						,
+	is_destory    				BOOLEAN						DEFAULT FALSE,
+	destory_uid   				bigint						,
+	destory_at					timestamp (6) 				WITHOUT TIME ZONE,
+	update_at    				timestamp (6) 				WITHOUT TIME ZONE,
+	update_uid    				bigint						,
 	create_at     				timestamp (6) 				WITHOUT TIME ZONE,
-	update_uid					bigint						,
-	update_at     				timestamp (6) 				WITHOUT TIME ZONE,
+	create_uid    				bigint						,
 	constraint PK_items primary key (id)
 );
 
-------------------------------------商品库存表 --------------------------------------------
+------------------------------------商品库存表 sku--------------------------------------------
 --	id														主键
 --  item_id   												商品ID           
 --  item_colors    											颜色 
@@ -113,6 +171,8 @@ CREATE TABLE items (
 --  sold_amount   											卖出数量
 --  is_sold_out   											是否售空
 --  rest_amount   											余量
+--  inv_url  												sku链接
+--	inv_img													sku主图
 --  item_preview_imgs										预览图 json串   													   
 CREATE TABLE inventories (
 	id         												bigserial           		not null,
@@ -125,8 +185,94 @@ CREATE TABLE inventories (
 	sold_amount   											INTEGER						DEFAULT 0,
 	rest_amount   											INTEGER						DEFAULT 0,
 	is_sold_out												BOOLEAN						DEFAULT FALSE,
+	inv_url 												CHARACTER VARYING (255) 	,
+	inv_img 												CHARACTER VARYING (255) 	,
 	item_preview_imgs 										text						,
 	constraint PK_inventories primary key (id)
+);
+
+------------------------------------主题表 --------------------------------------------
+--	id														主键
+--  mater_item_id   										主题主宣传商品ID
+--  title    												标题 
+--  theme_desc   											主题描述   
+--  start_at    											主题开始时间  
+--  end_at   												主题结束时间
+--  item_price_top   										主题包含商品最高价格
+--  item_price_low   										主题包含商品最低价格
+--  theme_img   											主题图片
+--  theme_url   											主题列表url
+--  item_count   											主题包含商品数量
+--  theme_tags												主题主图标签json串 name,angle,top,left
+--  theme_tag_count   										主题图片标签数
+--  sort_nu													排序编号
+--	is_destory    											是否删除,
+--	destory_uid   											删除操作用户id,
+--	update_at    											更新时间,
+--	update_uid    											更新操作用户id,
+--	create_at     											创建时间
+--	create_uid    											创建操作用户id, 													   
+CREATE TABLE themes (
+	id         												bigserial           		not null,
+	mater_item_id 											bigint						not null,
+	title  													CHARACTER VARYING (255) 	,
+	theme_desc  											CHARACTER VARYING (255) 	,
+	start_at     											timestamp (6) 				WITHOUT TIME ZONE,
+	end_at     												timestamp (6) 				WITHOUT TIME ZONE,
+	item_price_top   										numeric (10, 2)				,
+   	item_price_low   										numeric (10, 2)				,
+	theme_img												CHARACTER VARYING (255) 	,
+	theme_url												CHARACTER VARYING (255) 	,
+	theme_tags												CHARACTER VARYING (512) 	,
+	item_count												integer						,
+	theme_tag_count											integer						,
+	sort_nu													integer 					,
+	is_destory    											BOOLEAN						DEFAULT FALSE,
+	destory_uid   											bigint						,
+	destory_at												timestamp (6) 				WITHOUT TIME ZONE,
+	update_at    											timestamp (6) 				WITHOUT TIME ZONE,
+	update_uid    											bigint						,
+	create_at     											timestamp (6) 				WITHOUT TIME ZONE,
+	create_uid    											bigint						,
+	constraint PK_themes primary key (id)
+);
+
+------------------------------------主题信息表 --------------------------------------------
+--	id														主键
+--  theme_id   												主题ID  
+--  item_id   												商品ID 
+--  item_img   												商品图片
+--  item_url   												商品url
+--  item_price   											商品价格
+--  item_sold_amount   										商品销量
+--  like_count   											商品点赞数
+--  collect_count   										商品收藏数	
+--  sort_nu   												商品排序
+--	is_destory    											是否删除,
+--	destory_uid   											删除操作用户id,
+--	update_at    											更新时间,
+--	update_uid    											更新操作用户id,
+--	create_at     											创建时间
+--	create_uid    											创建操作用户id															   
+CREATE TABLE theme_item (
+	id         												bigserial           		not null,
+	theme_id 												bigint						not null,
+	item_id  												bigint						not null,
+	item_img  												CHARACTER VARYING (255) 	,
+	item_url  												CHARACTER VARYING (255) 	,
+	item_price  											numeric (10, 2)				,
+	item_sold_amount  										integer 					,
+	like_count												integer 					,
+	collect_count											integer 					,
+	sort_nu													integer 					,
+	is_destory    											BOOLEAN						DEFAULT FALSE,
+	destory_uid   											bigint						,
+	destory_at												timestamp (6) 				WITHOUT TIME ZONE,
+	update_at    											timestamp (6) 				WITHOUT TIME ZONE,
+	update_uid    											bigint						,
+	create_at     											timestamp (6) 				WITHOUT TIME ZONE,
+	create_uid    											bigint						,
+	constraint PK_theme_item primary key (id)
 );
 
 -------------------------------------客户入库商品信息表 --------------------------------------
@@ -189,6 +335,7 @@ CREATE TABLE prods (
 	state    					CHARACTER VARYING (512)		,
 	is_destory    				BOOLEAN						DEFAULT FALSE,
 	destory_uid   				bigint						,
+	destory_at					timestamp (6) 				WITHOUT TIME ZONE,
 	update_at    				timestamp (6) 				WITHOUT TIME ZONE,
 	update_uid    				bigint						,
 	create_at     				timestamp (6) 				WITHOUT TIME ZONE,
@@ -299,6 +446,7 @@ CREATE TABLE users (
    	current_sign_ip    							CHARACTER VARYING (255)  	,
    	is_destory    								BOOLEAN						DEFAULT FALSE,
    	destory_uid   								bigint						,
+	destory_at									timestamp (6) 				WITHOUT TIME ZONE,
 	update_at    								timestamp (6) 				WITHOUT TIME ZONE,
 	update_uid    								bigint						,
 	create_at     								timestamp (6) 				WITHOUT TIME ZONE,
@@ -353,6 +501,7 @@ CREATE TABLE members (
    	current_sign_ip    							CHARACTER VARYING (255)  	,
    	is_destory    								BOOLEAN						DEFAULT FALSE,
    	destory_uid   								bigint						,
+	destory_at									timestamp (6) 				WITHOUT TIME ZONE,
 	update_at    								timestamp (6) 				WITHOUT TIME ZONE,
 	update_uid    								bigint						,
 	create_at     								timestamp (6) 				WITHOUT TIME ZONE,
@@ -385,6 +534,7 @@ CREATE TABLE address (
    delivery_detail								CHARACTER VARYING (512)  	,
    is_destory   								BOOLEAN						DEFAULT FALSE,
    destory_mid   								bigint						,
+   destory_at									timestamp (6) 				WITHOUT TIME ZONE,
    update_at    								timestamp (6) 				WITHOUT TIME ZONE,
    update_mid    								bigint						,
    create_at     								timestamp (6) 				WITHOUT TIME ZONE,
@@ -392,20 +542,52 @@ CREATE TABLE address (
    constraint PK_address primary key (id)
 );
 -------------------------------------优惠券表-----------------------
---	id         									主键,
---	mid         								用户ID,
---	amount         								需要满足的面值,
+--	id         									主键
+--	mid         								用户ID
+--	must_cost         							需要满足的面值
 --	reduce_cost         						减少的金额
+
+CREATE TABLE coupons (
+   id         									bigserial           		not null,
+   mid   										bigint						,
+   must_cost 									numeric (10, 2)				,
+   reduce_cost 									numeric (10, 2)				,
+   is_destory   								BOOLEAN						DEFAULT FALSE,
+   destory_mid   								bigint						,
+   destory_at									timestamp (6) 				WITHOUT TIME ZONE,
+   update_at    								timestamp (6) 				WITHOUT TIME ZONE,
+   update_mid    								bigint						,
+   create_at     								timestamp (6) 				WITHOUT TIME ZONE,
+   create_mid    								bigint						,
+   constraint PK_coupons primary key (id)
+);
 -------------------------------------订单表---------删除时进行物理删除，有相应的历史表，将删除的数据拷贝到历史表---------------
 --	id         									主键,
 --	mid         								用户ID,
---	item_id         							商品ID,
 --	address_id									收货地址
 --	receive_time_code							收货时间 code
 --	payment_code								支付方式 code
---	payment_code								优惠券id
---	delivery_detail								配送详细地址
---	is_destory    								是否删除,
+--	place_order_method							下单方式 code 1.手机，2.web，3，分享，4，拼购
+--	coupons_id									优惠券id
+--	state    									订单状态,code 1001未支付，1002已支付，1003待发货，1004待收货，1005已完成，1006已取消，1007已删除,1008,支付失败
+--	submit_at									提交订单时间
+--	payment_at									支付时间
+--	deliver_at									发货时间
+--	receive_at									收货时间
+--	complete_at									已完成时间
+--	cacel_at									已取消时间
+--	delete_at									已删除时间
+--	pay_error_at								支付失败时间
+--	order_desc									备注
+--	order_item_count							商品数量
+--	order_amount								订单金额
+--	charges_amount								邮费
+--	share_amount								分享减价金额
+--	polling_amount								拼购减价金额
+--	discount_amount								总共优惠金额
+--	paid_amount									实际付款金额
+--	save_amount									已节省金额
+--	is_destory    								是否删除
 --	destory_mid   								删除操作用户id,
 --	update_at    								更新时间,
 --	update_mid    								更新操作用户ID,
@@ -414,14 +596,33 @@ CREATE TABLE address (
 
 CREATE TABLE orders (
    id         									bigserial           		not null,
-   mid   										bigint						,
-   is_default   								BOOLEAN						DEFAULT FALSE,
-   tel   										CHARACTER VARYING (255)  	,
-   "name"         								CHARACTER VARYING (255)  	,
-   delivery_city								CHARACTER VARYING (255)  	,
-   delivery_detail								CHARACTER VARYING (512)  	,
+   mid   										bigint						not null,
+   address_id        							bigint						not null,
+   receive_time_code							CHARACTER VARYING (255)  	,
+   payment_code									CHARACTER VARYING (128)  	,
+   place_order_method							CHARACTER VARYING (128)  	,
+   coupons_id									bigint						,
+   state										bigint						not null,
+   submit_at									timestamp (6) 				WITHOUT TIME ZONE,
+   payment_at									timestamp (6) 				WITHOUT TIME ZONE,
+   deliver_at									timestamp (6) 				WITHOUT TIME ZONE,
+   receive_at									timestamp (6) 				WITHOUT TIME ZONE,
+   complete_at									timestamp (6) 				WITHOUT TIME ZONE,
+   cacel_at										timestamp (6) 				WITHOUT TIME ZONE,
+   delete_at									timestamp (6) 				WITHOUT TIME ZONE,
+   pay_error_at									timestamp (6) 				WITHOUT TIME ZONE,
+   order_desc									CHARACTER VARYING (512)  	,
+   order_item_count								integer						not null,
+   order_amount									numeric (10, 2)				not null,
+   charges_amount								numeric (10, 2)				,
+   share_amount									numeric (10, 2)				,
+   polling_amount								numeric (10, 2)				,
+   discount_amount								numeric (10, 2)				,
+   paid_amount									numeric (10, 2)				not null,
+   save_amount									numeric (10, 2)				not null,
    is_destory   								BOOLEAN						DEFAULT FALSE,
    destory_mid   								bigint						,
+   destory_at									timestamp (6) 				WITHOUT TIME ZONE,
    update_at    								timestamp (6) 				WITHOUT TIME ZONE,
    update_mid    								bigint						,
    create_at     								timestamp (6) 				WITHOUT TIME ZONE,
@@ -429,6 +630,80 @@ CREATE TABLE orders (
    constraint PK_orders primary key (id)
 );
 
+-------------------------------------订单信息表--------------------------------------
+--	id         									主键,
+--	oid         								订单ID,
+--	mid         								用户ID,
+--	item_id         							商品ID,
+--	inv_id										库存ID
+--	item_count									商品数量
+--	price										商品价格
+--	order_price									下单商品价格
+--	is_destory    								是否删除
+--	destory_mid   								删除操作用户id,
+--	update_at    								更新时间,
+--	update_mid    								更新操作用户ID,
+--	create_at     								创建时间,
+--	create_mid    								创建操作用户ID
+
+CREATE TABLE order_item (
+   id         									bigserial           		not null,
+   oid   										bigint						not null,
+   mid   										bigint						not null,
+   item_id   									bigint						not null,
+   inv_id   									bigint						not null,
+   item_count									integer						not null,
+   price										numeric (10, 2)				not null,
+   order_price									numeric (10, 2)				not null,
+   is_destory   								BOOLEAN						DEFAULT FALSE,
+   destory_mid   								bigint						,
+   destory_at									timestamp (6) 				WITHOUT TIME ZONE,
+   update_at    								timestamp (6) 				WITHOUT TIME ZONE,
+   update_mid    								bigint						,
+   create_at     								timestamp (6) 				WITHOUT TIME ZONE,
+   create_mid    								bigint						,
+   constraint PK_order_item primary key (id)
+);
+
+-------------------------------------购物车表--------------------------------------
+--	id         									主键,
+--	mid         								用户ID,
+--	item_id         							商品ID,
+--	inv_id										库存ID
+--	cart_count									购买数量
+--	cart_price									购买价格
+--	item_price									商品价格
+--	inv_img										sku主图
+--	item_url									商品url
+--	cart_at										加入购物车时间
+--	is_destory    								是否删除
+--	destory_mid   								删除操作用户id,
+--	destory_at   								删除时间,
+--	update_at    								更新时间,
+--	update_mid    								更新操作用户ID,
+--	create_at     								创建时间,
+--	create_mid    								创建操作用户ID
+
+CREATE TABLE carts (
+   id         									bigserial           		not null,
+   mid   										bigint						not null,
+   item_id   									bigint						not null,
+   inv_id   									bigint						not null,
+   cart_count									integer						not null,
+   cart_price									numeric (10, 2)				not null,
+   item_price									numeric (10, 2)				not null,
+   inv_img										CHARACTER VARYING (512)  	,
+   item_url										CHARACTER VARYING (512)  	,
+   cart_at										timestamp (6) 				WITHOUT TIME ZONE,
+   is_destory   								BOOLEAN						DEFAULT FALSE,
+   destory_mid   								bigint						,
+   destory_at									timestamp (6) 				WITHOUT TIME ZONE,
+   update_at    								timestamp (6) 				WITHOUT TIME ZONE,
+   update_mid    								bigint						,
+   create_at     								timestamp (6) 				WITHOUT TIME ZONE,
+   create_mid    								bigint						,
+   constraint PK_carts primary key (id)
+);
 -------------------------------------品牌表--------------------------------------
 CREATE TABLE brands (
    brand_id         bigserial           not null,
@@ -456,16 +731,15 @@ CREATE TABLE cates (
 );
 
 -------------------------------------码表------------------------------------
----------颜色，尺寸，支付方式，收货时间---------
-
+---------支付方式，收货时间，下单方式，订单状态---------
 CREATE TABLE codes (
    cid          	bigserial           		not null,
    pcid  			bigint						,
    code  			CHARACTER VARYING (512)  	,
-   code_nm	     	CHARACTER VARYING (512)  	,
-   code_nm_cn     	CHARACTER VARYING (512)  	,
-   code_nm_en     	CHARACTER VARYING (512)  	,
-   code_nm_kr     	CHARACTER VARYING (512)  	,
+   value	     	CHARACTER VARYING (512)  	,
+   value_cn     	CHARACTER VARYING (512)  	,
+   value_en     	CHARACTER VARYING (512)  	,
+   value_kr     	CHARACTER VARYING (512)  	,
    code_desc     	CHARACTER VARYING (512)  	,
    constraint PK_codes primary key (cid)
 );
