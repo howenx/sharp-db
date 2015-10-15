@@ -99,7 +99,7 @@ CREATE TABLE items (
 	create_at     				timestamp (6) 				WITHOUT TIME ZONE,
 	update_uid					bigint						,
 	update_at     				timestamp (6) 				WITHOUT TIME ZONE,
-	constraint PK_items primary key (sid)
+	constraint PK_items primary key (id)
 );
 
 ------------------------------------商品库存表 --------------------------------------------
@@ -111,7 +111,6 @@ CREATE TABLE items (
 --  item_src_price   										成本价     
 --  item_curr_price   										销售价
 --  sold_amount   											卖出数量
---  rest_amount   											余量
 --  is_sold_out   											是否售空
 --  rest_amount   											余量
 --  item_preview_imgs										预览图 json串   													   
@@ -130,7 +129,7 @@ CREATE TABLE inventories (
 	constraint PK_inventories primary key (id)
 );
 
--------------------------------------客户商品入库信息表 --------------------------------------
+-------------------------------------客户入库商品信息表 --------------------------------------
 --	id														主键
 --	merch_uid  												客户id
 --	merch_nm  												客户名称
@@ -194,7 +193,28 @@ CREATE TABLE prods (
 	update_uid    				bigint						,
 	create_at     				timestamp (6) 				WITHOUT TIME ZONE,
 	create_uid    				bigint						,
-	constraint PK_prods primary key (pid)
+	constraint PK_prods primary key (id)
+);
+
+------------------------------------客户入库库存表 --------------------------------------------
+--	id														主键
+--  prod_id   												商品ID           
+--  prod_colors    											颜色 
+--  prod_size    											尺寸  
+--  amount   												库存数量 
+--  prod_price   											价格   
+--  recommend_price   										建议销售价
+--  prod_preview_imgs										预览图 json串   													   
+CREATE TABLE stock (
+	id         												bigserial           		not null,
+	prod_id 												bigint						not null,
+	prod_colors  											CHARACTER VARYING (255) 	,
+	prod_size  												CHARACTER VARYING (255) 	,
+	amount   												INTEGER						DEFAULT 0,
+	prod_price   											numeric (10, 2)				,
+   	recommend_price   										numeric (10, 2)				,
+	prod_preview_imgs 										text						,
+	constraint PK_stock primary key (id)
 );
 
 -------------------------------------拼购表 --------------------------------------
@@ -435,7 +455,9 @@ CREATE TABLE cates (
    constraint PK_cates primary key (cate_id)
 );
 
--------------------------------------码表--------------------------------------
+-------------------------------------码表------------------------------------
+---------颜色，尺寸，支付方式，收货时间---------
+
 CREATE TABLE codes (
    cid          	bigserial           		not null,
    pcid  			bigint						,
