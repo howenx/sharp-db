@@ -1,56 +1,4 @@
 ------------------------------------商品表 --------------------------------------------
---	id														主键
---	lang 													cn/kr/en
---	ciq_code   												海关编码		
---  item_id   												商品ID           
---  cate_id    												类别ID 
---  band_id    												品牌ID
---  cate_nm    												类别名称 
---  band_nm    												品牌名称    
---  item_name  												商品名称
---  item_title  											商品标题
---	bar_code												商品条形码
---	bar_des      											商品条形码描述信息
---  item_des     											商品详细信息    
---  merch_uid   											供货商用户id       
---  src_area  												原产地
---	on_shelves_at											上架时间,
---	off_shelves_at											下架时间,    
---	item_img												代表商品图片		
---	item_preview_imgs 										商品预览图片， json串
---	item_detail_imgs 										详细商品图片，json串
---	item_feature  											商品属性信息  存json串
---	is_join_theme  											是否加入主题
---	theme_id  												主题ID
---	is_major_item  											是否为主宣传商品
---	state   												商品状态 'Y'--正常,'D'--到期商品,'N'--删除,'K'--售空
---	is_destory												删除标记
---	is_free_ship  											是否包邮,
---	has_invoice  											是否有发票	,
---	has_vat_invoice  										是否有增值税发票
---	delivery_area  											发货地区 海外直发｜保税区仓库直发,
---	delivery_time  											配送时间 预计多少工作日到达,
---	is_restrict_buy 										是否限购,
---	restrict_amount 										限购数量,
---	item_url 												商品详细页面url,
---	is_shopping_poll 										是否支持拼购,
---	is_share												是否支持分享,
---	share_key 												分享商品key,
---	share_img												分享商品图片
---	share_url 												分享商品url
---	share_count 											商品被分享次数
---	like_count 												商品被点赞次数
---	collect_count 											商品被收藏次数
---	browse_count 											商品被浏览次数
---	item_notice 											有关此商品的重要通告
---  trans_uid    											翻译人员ID
---	trans_at     											翻译日期,
---	trans_lang     											翻译语言,存储成为 kr->cn,en->cn
---	create_uid    											最后更新操作用户,
---	update_uid    											最后更新操作用户,
---	create_at     											创建日期,
---	update_at     											更新日期
-
 --	id														商品ID
 --	ciq_code  												海关编码,
 --	lang 													语言,
@@ -109,9 +57,9 @@ CREATE TABLE items (
 	ciq_code  					bigint 						not null,
 	lang 						CHARACTER VARYING (255)		,
    	cate_id    					bigint						,
-   	brand_id    					bigint						,
+   	brand_id    				bigint						,
 	cate_nm    					CHARACTER VARYING (255) 	,
-	brand_nm    					CHARACTER VARYING (255) 	,
+	brand_nm    				CHARACTER VARYING (255) 	,
    	item_nm  					CHARACTER VARYING (255) 	not null,
 	item_title					CHARACTER VARYING (255) 	,
    	item_desc    				text						,
@@ -128,7 +76,7 @@ CREATE TABLE items (
 	is_join_theme  				BOOLEAN						DEFAULT FALSE,
 	theme_id  					bigint						,
 	is_major_item  				BOOLEAN						DEFAULT FALSE,
-	state    					CHARACTER VARYING (255)		,
+	state    					CHARACTER VARYING (255)		DEFAULT 'Y',
 	is_free_ship  				BOOLEAN						DEFAULT TRUE,
 	has_invoice  				BOOLEAN						DEFAULT FALSE,
 	has_vat_invoice  			BOOLEAN						DEFAULT FALSE,
@@ -167,7 +115,9 @@ CREATE TABLE items (
 --  item_size    											尺寸  
 --  amount   												库存数量 
 --  item_src_price   										成本价     
---  item_curr_price   										销售价
+--  item_price   											售价
+--  item_cost_price   										原价
+--  item_discout  											折扣
 --  sold_amount   											卖出数量
 --  is_sold_out   											是否售空
 --  rest_amount   											余量
@@ -181,7 +131,9 @@ CREATE TABLE inventories (
 	item_size  												CHARACTER VARYING (255) 	,
 	amount   												INTEGER						DEFAULT 0,
 	item_src_price   										numeric (10, 2)				,
-   	item_curr_price   										numeric (10, 2)				,
+   	item_price   											numeric (10, 2)				,
+	item_cost_price   										numeric (10, 2)				,
+	item_discout   											numeric (10, 2)				,
 	sold_amount   											INTEGER						DEFAULT 0,
 	rest_amount   											INTEGER						DEFAULT 0,
 	is_sold_out												BOOLEAN						DEFAULT FALSE,
@@ -193,11 +145,12 @@ CREATE TABLE inventories (
 
 ------------------------------------主题表 --------------------------------------------
 --	id														主键
---  mater_item_id   										主题主宣传商品ID
+--  master_item_id   										主题主宣传商品ID
 --  title    												标题 
 --  theme_desc   											主题描述   
 --  start_at    											主题开始时间  
 --  end_at   												主题结束时间
+--	theme_discount_up										几折扣起
 --  item_price_top   										主题包含商品最高价格
 --  item_price_low   										主题包含商品最低价格
 --  theme_img   											主题图片
@@ -211,14 +164,16 @@ CREATE TABLE inventories (
 --	update_at    											更新时间,
 --	update_uid    											更新操作用户id,
 --	create_at     											创建时间
---	create_uid    											创建操作用户id, 													   
+--	create_uid    											创建操作用户id,
+												   
 CREATE TABLE themes (
 	id         												bigserial           		not null,
-	mater_item_id 											bigint						not null,
+	master_item_id 											bigint						not null,
 	title  													CHARACTER VARYING (255) 	,
 	theme_desc  											CHARACTER VARYING (255) 	,
 	start_at     											timestamp (6) 				WITHOUT TIME ZONE,
 	end_at     												timestamp (6) 				WITHOUT TIME ZONE,
+	theme_discount_up										numeric (10, 1)				,
 	item_price_top   										numeric (10, 2)				,
    	item_price_low   										numeric (10, 2)				,
 	theme_img												CHARACTER VARYING (255) 	,
@@ -242,9 +197,14 @@ CREATE TABLE themes (
 --  theme_id   												主题ID  
 --  item_id   												商品ID 
 --  item_img   												商品图片
---  item_url   												商品url
+--  item_url   												商品详细页面链接
+--  item_title   											商品标题
 --  item_price   											商品价格
+--  item_cost_price   										商品原价
+--  item_discount   										商品折扣
 --  item_sold_amount   										商品销量
+--	is_master_item											是否是主题主打宣传商品
+--	master_item_tag											如果是主打宣传商品，会需要tag json串												
 --  like_count   											商品点赞数
 --  collect_count   										商品收藏数	
 --  sort_nu   												商品排序
@@ -260,8 +220,13 @@ CREATE TABLE theme_item (
 	item_id  												bigint						not null,
 	item_img  												CHARACTER VARYING (255) 	,
 	item_url  												CHARACTER VARYING (255) 	,
+	item_title												CHARACTER VARYING (255) 	,
 	item_price  											numeric (10, 2)				,
+	item_cost_price  										numeric (10, 2)				,
+	item_discount											numeric (10, 1)				,
 	item_sold_amount  										integer 					,
+	is_master_item											BOOLEAN						DEFAULT FALSE,
+	master_item_tag											CHARACTER VARYING (255) 	,
 	like_count												integer 					,
 	collect_count											integer 					,
 	sort_nu													integer 					,
@@ -431,8 +396,8 @@ CREATE TABLE users (
    	uname   									CHARACTER VARYING (255)  	not null,
   	"name"										CHARACTER VARYING (255)  	,
    	role_nm										CHARACTER VARYING (255)  	,
-   	face_img        							CHARACTER VARYING (255)  	DEFAULT 'Active',
-   	state										CHARACTER VARYING (255)  	,
+   	face_img        							CHARACTER VARYING (255)  	DEFAULT '/uploads/minify/0cc39ee105014881a9f4d1a58df620d31445395437794.png',
+   	state										CHARACTER VARYING (255)  	DEFAULT 'Active',
 	confirmation_token           				CHARACTER VARYING (255)		,
    	confirmed_at                 				timestamp (6) 				WITHOUT TIME ZONE,
    	confirmation_sent_at         				timestamp (6) 				WITHOUT TIME ZONE,
